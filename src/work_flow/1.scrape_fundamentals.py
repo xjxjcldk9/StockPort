@@ -1,20 +1,22 @@
 import json
-from selenium.webdriver.support.wait import WebDriverWait
 from collections import defaultdict
-
-
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import pandas as pd
 
-
+# selenium setting
 options = Options()
 options.page_load_strategy = 'normal'
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--enable-javascript")
 
+
 ETF_PATH = '../data/ETFs/'
+DATA_PATH = '../data/full_stocks_data/'
+
+
 df_0050s = pd.read_csv(ETF_PATH+'0050.csv')
 df_tw100s = pd.read_csv(ETF_PATH+'tw100.csv')
 df_0056s = pd.read_csv(ETF_PATH+'0056.csv')
@@ -38,11 +40,23 @@ stock_features = {'現金比例': 'financial-security/cash-flows-analysis',
                   'P/E Ratio': 'enterprise-value/price-to-earning-ratio'}
 
 
-# df = pd.read_csv('problems.csv')
+def scraping(ticks=dfs['代碼'], store_name='raw_tables.json'):
+    '''
+    Scrape data from the website and store the information into raw_tables.json.
 
+    Parameters:
+    - ticks: A list of ticks to scrape. Some ticks might fail during the initial scraping, so providing a custom list helps in retrying individual ticks.
+    - store_name: The name to store the raw data.
+    '''
+    full_table = defaultdict(dict)
+    error_ticks = defaultdict(list)
 
-def scraping(full_table):
-    for tick in ['6550']:
+    # Check name changed.
+    if ticks != dfs['代碼'] and store_name == 'raw_tables.json':
+        raise ValueError(
+            "If provide customary ticks, store_name should be renamed.")
+
+    for tick in ticks:
         for feature in stock_features:
             try:
                 driver = webdriver.Chrome(options=options)
@@ -58,17 +72,10 @@ def scraping(full_table):
                 full_table[tick][feature] = table.text.split('\n')
                 driver.close()
             except:
-                continue
+                error_ticks[tick].append(feature)
 
+    with open(DATA_PATH+store_name, "w") as f:
+        json.dump(full_table, f)
 
-DATA_PATH = '../data/full_stocks_data/'
-
-
-def write_data(full_table):
-    with open(DATA_PATH+"raw_tables.json", "w") as outfile:
-        json.dump(full_table, outfile)
-
-
-full_table = defaultdict(dict)
-scraping(full_table)
-write_data(full_table)
+    with open(DATA_PATH+'error_ticks.json', "w") as f:
+        json.dump(error_ticks, f)

@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -95,7 +94,7 @@ class industries:
             '預測成長率', ascending=False)
 
 
-def main():
+def predict_stocks():
     for i, industry in enumerate(df['產業'].unique()):
         s = industries(industry)
         if len(s.train_X) < 20:
@@ -115,6 +114,3 @@ def main():
 
     prediction_stocks.sort_values('預測成長率', ascending=False).to_csv(
         '../data/recommended_stocks/predicted_stocks.csv', index=False)
-
-
-main()

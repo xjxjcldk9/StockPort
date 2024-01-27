@@ -4,8 +4,9 @@ import numpy as np
 
 DATA_PATH = '../data/full_stocks_data/'
 
-with open(DATA_PATH+'raw_tables.json') as tables:
-    raw_tables = json.load(tables)
+
+STOCK_TICK_PATH = '../data/static_information/'
+stock_tick = pd.read_csv(STOCK_TICK_PATH+'stock_tick.csv')
 
 
 def deal_month_freq(tick):
@@ -110,14 +111,18 @@ def deal_normal(tick):
     return main_df
 
 
-STOCK_TICK_PATH = '../data/static_information/'
-stock_tick = pd.read_csv(STOCK_TICK_PATH+'/stock_tick.csv')
+with open(DATA_PATH+'raw_tables.json') as tables:
+    raw_tables = json.load(tables)
 
 
-problem_ticks = []
+def raw_to_df(raw_tables, name='stocks.csv'):
+    '''
+    Read the raw_tables json file and combine it to a dataframe.
 
+    Parameter:
+    - rawtables
+    '''
 
-def combine_all():
     dfs = []
     for tick in raw_tables:
         try:
@@ -140,6 +145,4 @@ def combine_all():
     return final_df
 
 
-# 財報三率有問題
-combine_all().to_csv(DATA_PATH+'stocks.csv')
-print(problem_ticks)
+combine_all().to_csv(DATA_PATH+name)
