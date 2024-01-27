@@ -8,6 +8,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
 
+
 df = pd.read_csv('../data/full_stocks_data/stocks.csv')
 
 

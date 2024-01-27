@@ -14,10 +14,10 @@ options.page_load_strategy = 'normal'
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--enable-javascript")
 
-ETF_PATH = '../data/ETFs'
-df_0050s = pd.read_csv(ETF_PATH+'/0050.csv')
-df_tw100s = pd.read_csv(ETF_PATH+'/tw100.csv')
-df_0056s = pd.read_csv(ETF_PATH+'/0056.csv')
+ETF_PATH = '../data/ETFs/'
+df_0050s = pd.read_csv(ETF_PATH+'0050.csv')
+df_tw100s = pd.read_csv(ETF_PATH+'tw100.csv')
+df_0056s = pd.read_csv(ETF_PATH+'0056.csv')
 
 dfs = pd.concat([df_0050s, df_tw100s, df_0056s])
 dfs = dfs.drop_duplicates('代碼')
@@ -46,7 +46,8 @@ def scraping(full_table):
         for feature in stock_features:
             try:
                 driver = webdriver.Chrome(options=options)
-                url = f"https://www.wantgoo.com/stock/{tick}/{stock_features[feature]}"
+                url = f"https://www.wantgoo.com/stock/{
+                    tick}/{stock_features[feature]}"
                 driver.get(url)
 
                 table = driver.find_element(by=By.CSS_SELECTOR, value='table')
@@ -60,11 +61,11 @@ def scraping(full_table):
                 continue
 
 
-DATA_PATH = '../data/full_stocks_data'
+DATA_PATH = '../data/full_stocks_data/'
 
 
 def write_data(full_table):
-    with open(DATA_PATH+"/raw_tables.json", "w") as outfile:
+    with open(DATA_PATH+"raw_tables.json", "w") as outfile:
         json.dump(full_table, outfile)
 
 

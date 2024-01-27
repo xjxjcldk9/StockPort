@@ -2,9 +2,9 @@ import json
 import pandas as pd
 import numpy as np
 
-DATA_PATH = '../data/full_stocks_data'
+DATA_PATH = '../data/full_stocks_data/'
 
-with open(DATA_PATH+'/raw_tables.json') as tables:
+with open(DATA_PATH+'raw_tables.json') as tables:
     raw_tables = json.load(tables)
 
 
@@ -110,7 +110,8 @@ def deal_normal(tick):
     return main_df
 
 
-stock_tick = pd.read_csv('stock_tick.csv')
+STOCK_TICK_PATH = '../data/static_information/'
+stock_tick = pd.read_csv(STOCK_TICK_PATH+'/stock_tick.csv')
 
 
 problem_ticks = []
@@ -140,5 +141,5 @@ def combine_all():
 
 
 # 財報三率有問題
-combine_all().to_csv(DATA_PATH+'/stocks.csv')
+combine_all().to_csv(DATA_PATH+'stocks.csv')
 print(problem_ticks)
