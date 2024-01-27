@@ -2,8 +2,9 @@ import json
 import pandas as pd
 import numpy as np
 
+DATA_PATH = '../data/full_stocks_data'
 
-with open('raw_tables.json') as tables:
+with open(DATA_PATH+'/raw_tables.json') as tables:
     raw_tables = json.load(tables)
 
 
@@ -103,7 +104,8 @@ def deal_normal(tick):
         else:
             main_df = main_df.join(df)
     main_df['季收盤價'] = pd.to_numeric(main_df['季收盤價'])
-    main_df['季收盤價成長率y'] = np.log(main_df['季收盤價'].shift(2) / main_df['季收盤價'])
+    main_df['季收盤價成長率y'] = np.log(
+        main_df['季收盤價'].shift(2) / main_df['季收盤價'].shift(1))
     main_df = main_df.drop(columns='季收盤價')
     return main_df
 
@@ -138,7 +140,5 @@ def combine_all():
 
 
 # 財報三率有問題
-combine_all().to_csv('stocks.csv')
+combine_all().to_csv(DATA_PATH+'/stocks.csv')
 print(problem_ticks)
-
-# pd.Series(problem_ticks).to_csv('problems.csv', index=False)

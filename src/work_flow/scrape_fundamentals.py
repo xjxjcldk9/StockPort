@@ -1,6 +1,5 @@
 import json
 from selenium.webdriver.support.wait import WebDriverWait
-from concurrent import futures
 from collections import defaultdict
 
 
@@ -15,10 +14,10 @@ options.page_load_strategy = 'normal'
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--enable-javascript")
 
-
-df_0050s = pd.read_csv('0050.csv')
-df_tw100s = pd.read_csv('tw100.csv')
-df_0056s = pd.read_csv('0056.csv')
+ETF_PATH = '../data/ETFs'
+df_0050s = pd.read_csv(ETF_PATH+'/0050.csv')
+df_tw100s = pd.read_csv(ETF_PATH+'/tw100.csv')
+df_0056s = pd.read_csv(ETF_PATH+'/0056.csv')
 
 dfs = pd.concat([df_0050s, df_tw100s, df_0056s])
 dfs = dfs.drop_duplicates('代碼')
@@ -61,8 +60,11 @@ def scraping(full_table):
                 continue
 
 
+DATA_PATH = '../data/full_stocks_data'
+
+
 def write_data(full_table):
-    with open("problems.json", "w") as outfile:
+    with open(DATA_PATH+"/raw_tables.json", "w") as outfile:
         json.dump(full_table, outfile)
 
 

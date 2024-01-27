@@ -1,0 +1,8 @@
+pandas
+numpy
+selenium
+scikit-learn
+yfinance
+cvxopt
+cvxpy
+PyPortfolioOpt

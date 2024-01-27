@@ -8,7 +8,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
 
-df = pd.read_csv('stocks.csv')
+df = pd.read_csv('../data/full_stocks_data/stocks.csv')
 
 
 df[['每股盈餘季增率', '每股盈餘年增率']] = np.arctan(df[['每股盈餘季增率', '每股盈餘年增率']])
@@ -113,7 +113,7 @@ def main():
                 [prediction_stocks, industry_prediction])
 
     prediction_stocks.sort_values('預測成長率', ascending=False).to_csv(
-        'predicted_stocks.csv', index=False)
+        '../data/recommended_stocks/predicted_stocks.csv', index=False)
 
 
 main()
