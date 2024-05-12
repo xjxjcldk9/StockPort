@@ -1,25 +1,24 @@
 import json
-from collections import defaultdict
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import pandas as pd
+from config import ETF_PATH, DATA_PATH
+import datetime
+from pathlib import Path
 
 # selenium setting
 options = Options()
 options.page_load_strategy = 'normal'
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--enable-javascript")
+options.add_argument("--headless=new")
 
 
-ETF_PATH = '../data/ETFs/'
-DATA_PATH = '../data/full_stocks_data/'
-
-
-df_0050s = pd.read_csv(ETF_PATH+'0050.csv')
-df_tw100s = pd.read_csv(ETF_PATH+'tw100.csv')
-df_0056s = pd.read_csv(ETF_PATH+'0056.csv')
+df_0050s = pd.read_csv(ETF_PATH+'/0050.csv')
+df_tw100s = pd.read_csv(ETF_PATH+'/tw100.csv')
+df_0056s = pd.read_csv(ETF_PATH+'/0056.csv')
 
 dfs = pd.concat([df_0050s, df_tw100s, df_0056s])
 dfs = dfs.drop_duplicates('代碼')
@@ -40,46 +39,38 @@ stock_features = {'現金比例': 'financial-security/cash-flows-analysis',
                   'P/E Ratio': 'enterprise-value/price-to-earning-ratio'}
 
 
-def scraping(ticks=dfs['代碼'], store_name='raw_tables.json'):
-    '''
-    Scrape data from the website and store the information into raw_tables.json.
+domain_name = "https://www.wantgoo.com/stock"
 
-    Parameters:
-    - ticks: A list of ticks to scrape. Some ticks might fail during the initial scraping, so providing a custom list helps in retrying individual ticks.
-    - store_name: The name to store the raw data.
-    '''
-    full_table = defaultdict(dict)
-    error_ticks = defaultdict(list)
+time = datetime.datetime.now()
+date = time.strftime("%Y_%m")
 
-    # Check name changed.
-    if (set(ticks) != set(dfs['代碼'])) and store_name == 'raw_tables.json':
-        raise ValueError(
-            "If provide customary ticks, store_name should be renamed.")
 
-    for tick in ticks:
+file_storage_path = f"{DATA_PATH}/{date}_raw"
+Path(file_storage_path).mkdir(exist_ok=True)
+
+driver = webdriver.Chrome(options=options)
+
+
+def scraping(tick):
+    tick_table = {}
+    try:
         for feature in stock_features:
-            try:
-                driver = webdriver.Chrome(options=options)
-                url = f"https://www.wantgoo.com/stock/{
-                    tick}/{stock_features[feature]}"
-                driver.get(url)
+            url = f"{domain_name}/{tick}/{stock_features[feature]}"
+            driver.get(url)
+            table = driver.find_element(by=By.CSS_SELECTOR, value='table')
+            wait = WebDriverWait(driver, timeout=20)
+            wait.until(lambda _: table.is_displayed())
+            tick_table[feature] = table.text.split('\n')
 
-                table = driver.find_element(by=By.CSS_SELECTOR, value='table')
-
-                wait = WebDriverWait(driver, timeout=20)
-                wait.until(lambda d: table.is_displayed())
-
-                full_table[tick][feature] = table.text.split('\n')
-                driver.close()
-            except:
-                error_ticks[tick].append(feature)
-
-    with open(DATA_PATH+store_name, "w") as f:
-        json.dump(full_table, f)
-
-    with open(DATA_PATH+'error_ticks.json', "w") as f:
-        json.dump(error_ticks, f)
+        with open(f"{file_storage_path}/{tick}.json", "w") as f:
+            json.dump(tick_table, f)
+    except:
+        # consider error log
+        print(f"Error occurred at {tick}!")
 
 
 if __name__ == '__main__':
-    scraping()
+    for i, tick in enumerate(dfs['代碼']):
+        if i > 5:
+            break
+        scraping(tick)
