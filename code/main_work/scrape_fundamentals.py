@@ -7,13 +7,13 @@ import pandas as pd
 from config import ETF_PATH, DATA_PATH
 import datetime
 from pathlib import Path
+import time
 
 # selenium setting
 options = Options()
-options.page_load_strategy = 'normal'
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--enable-javascript")
-options.add_argument("--headless=new")
+# options.add_argument("--headless=chrome")
 
 
 df_0050s = pd.read_csv(ETF_PATH+'/0050.csv')
@@ -45,22 +45,24 @@ time = datetime.datetime.now()
 date = time.strftime("%Y_%m")
 
 
-file_storage_path = f"{DATA_PATH}/{date}_raw"
-Path(file_storage_path).mkdir(exist_ok=True)
-
-driver = webdriver.Chrome(options=options)
+file_storage_path = f"{DATA_PATH}/{date}/raw"
+Path(file_storage_path).mkdir(parents=True, exist_ok=True)
 
 
+# TODO: Fix could not get number
 def scraping(tick):
     tick_table = {}
     try:
         for feature in stock_features:
             url = f"{domain_name}/{tick}/{stock_features[feature]}"
+            driver = webdriver.Chrome(options=options)
             driver.get(url)
+
             table = driver.find_element(by=By.CSS_SELECTOR, value='table')
             wait = WebDriverWait(driver, timeout=20)
-            wait.until(lambda _: table.is_displayed())
+            wait.until(lambda d: table.is_displayed())
             tick_table[feature] = table.text.split('\n')
+            driver.quit()
 
         with open(f"{file_storage_path}/{tick}.json", "w") as f:
             json.dump(tick_table, f)
@@ -71,6 +73,9 @@ def scraping(tick):
 
 if __name__ == '__main__':
     for i, tick in enumerate(dfs['代碼']):
-        if i > 5:
+        if i < 5:
+            scraping(tick)
+        else:
             break
-        scraping(tick)
+        if (i > 0) & (i % 10 == 0):
+            print(f'scaped {i}')

@@ -2,20 +2,26 @@ import json
 import pandas as pd
 import numpy as np
 import yfinance as yf
+from config import STOCK_TICK_PATH, DATA_PATH
+import datetime
+from pathlib import Path
+import os
 
 
-DATA_PATH = '../data/full_stocks_data/'
+stock_tick = pd.read_csv(STOCK_TICK_PATH+'/stock_tick.csv')
 
 
-STOCK_TICK_PATH = '../data/static_information/'
-stock_tick = pd.read_csv(STOCK_TICK_PATH+'stock_tick.csv')
+time = datetime.datetime.now()
+date = time.strftime("%Y_%m")
+
+file_storage_path = f"{DATA_PATH}/{date}"
 
 
-def deal_month_freq(tick):
+def deal_month_freq(fundamental):
 
     dfs = []
     for feature in ['P/E Ratio', '股價淨值比(P/B)']:
-        df_string = raw_tables[tick][feature]
+        df_string = fundamental[feature]
 
         df = pd.DataFrame([row.split()[:-1] for row in df_string[1:]],
                           columns=df_string[0].split()[:-1])
@@ -35,8 +41,8 @@ def deal_month_freq(tick):
     return df
 
 
-def deal_eps(tick):
-    df_string = raw_tables[tick]['每股盈餘(EPS)']
+def deal_eps(fundamental):
+    df_string = fundamental['每股盈餘(EPS)']
 
     data = []
     for row in df_string[1:]:
@@ -72,8 +78,8 @@ def deal_eps(tick):
     return df
 
 
-def deal_nwps(tick):
-    df_string = raw_tables[tick]['每股淨值']
+def deal_nwps(fundamental):
+    df_string = fundamental['每股淨值']
     data = []
     for row in df_string[1:]:
         adding = row.split()[:-1]
@@ -85,12 +91,12 @@ def deal_nwps(tick):
     return df
 
 
-def deal_normal(tick):
+def deal_normal(fundamental):
     normal_features = ['現金比例', '營業現金對淨利', '負債佔資產比', '長期資金佔固定資產比', '流動比',
                        '週轉天', 'ROE-ROA', '財報三率', '營業利益增率']
     for i, feature in enumerate(normal_features):
 
-        df_string = raw_tables[tick][feature]
+        df_string = fundamental[feature]
 
         if ('季收盤價' in df_string[0]) and (i != 1):
             df = pd.DataFrame([row.split()[:-1] for row in df_string[1:]],
@@ -114,59 +120,51 @@ def deal_normal(tick):
     return main_df
 
 
-with open(DATA_PATH+'raw_tables.json') as tables:
-    raw_tables = json.load(tables)
+# TODO: Change this
+def append_last_price(df, tick):
+
+    stock = yf.Ticker(str(tick)+'.TW')
+    stock_data = stock.history()
+    now_price = stock_data.sort_index(ascending=False).iloc[0]['Close']
+    indices = df[df['代碼'] == tick].index
+    last_price = df.loc[indices[0], '季收盤價']
+
+    df.loc[indices[1], "季收盤價成長率y"] = np.log(now_price / last_price)
 
 
-def raw_to_df(raw_tables, name='stocks.csv'):
-    '''
-    Read the raw_tables json file and combine it to a dataframe.
+def pack_to_df(tick, fundamental):
+    try:
+        d1 = deal_normal(fundamental)
+        d2 = deal_eps(fundamental)
+        d3 = deal_nwps(fundamental)
+        d4 = deal_month_freq(fundamental)
+        df = d1.join(d2).join(d3).join(d4)
 
-    Parameter:
-    - rawtables
-    '''
+        specific_stock = stock_tick[stock_tick['代碼'] == int(tick)]
+
+        df['代碼'] = tick
+        df['股票名稱'] = specific_stock['名稱'].iloc[0]
+        df['產業'] = specific_stock['產業'].iloc[0]
+
+        # append_last_price(df)
+    except:
+        print(f'{tick} has problem!!')
+    return df
+
+
+def raw_to_df(raw_tables):
 
     dfs = []
-    for tick in raw_tables:
-        try:
-            d1 = deal_normal(tick)
-
-            d2 = deal_eps(tick)
-
-            d3 = deal_nwps(tick)
-
-            d4 = deal_month_freq(tick)
-
-            df = d1.join(d2).join(d3).join(d4)
-
-            specific_stock = stock_tick[stock_tick['代碼'] == int(tick)]
-
-            df['代碼'] = tick
-            df['股票名稱'] = specific_stock['名稱'].iloc[0]
-            df['產業'] = specific_stock['產業'].iloc[0]
-            dfs.append(df)
-        except:
-            print(f'{tick} has problem!!')
 
     final_df = pd.concat(dfs)
     return final_df
 
 
-def append_last_price(df):
-    def patch_last_price(index):
-        stock = yf.Ticker(str(index)+'.TW')
-        stock_data = stock.history()
-        now_price = stock_data.sort_index(ascending=False).iloc[0]['Close']
-        indices = df[df['代碼'] == index].index
-        last_price = df.loc[indices[0], '季收盤價']
-
-        df.loc[indices[1], "季收盤價成長率y"] = np.log(now_price / last_price)
-    for index in df['代碼'].unique():
-        patch_last_price(index)
-
-
 if __name__ == '__main__':
-    raw_to_df(raw_tables).to_csv(DATA_PATH+'stocks.csv')
-    df = pd.read_csv(DATA_PATH+'stocks.csv')
-    append_last_price(df)
-    df.to_csv(DATA_PATH+'stocks.csv', index=False)
+    for file in os.listdir(file_storage_path+'/raw'):
+        tick = file.split('.')[0]
+        with open(file_storage_path+'/raw/'+file) as f:
+            fundamental = json.load(f)
+        pack_to_df(tick, fundamental).to_csv('test.csv')
+
+        break
