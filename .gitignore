@@ -5,9 +5,9 @@ myenv/
 *__pycache__*
 
 
-mlruns/
-fundamentals/
-
-config.py
 
 股票論文/
+
+test.csv
+
+data/stock_prices
