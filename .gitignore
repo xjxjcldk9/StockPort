@@ -1,0 +1,13 @@
+testing/
+myenv/
+
+*.DS_Store
+*__pycache__*
+
+
+mlruns/
+fundamentals/
+
+config.py
+
+股票論文/
