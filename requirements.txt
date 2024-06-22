@@ -6,4 +6,5 @@ yfinance
 cvxopt
 cvxpy
 PyPortfolioOpt
+scikit-learn
 

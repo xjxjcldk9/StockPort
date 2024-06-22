@@ -1,4 +1,4 @@
-testing/
+
 *env
 
 *.DS_Store
@@ -8,6 +8,6 @@ testing/
 
 股票論文/
 
-test.csv
 
 data/stock_prices
+data/portfolio
