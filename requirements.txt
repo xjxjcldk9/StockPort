@@ -1,15 +1,5 @@
 #basic
 pandas
-numpy
-matplotlib
-
-#webscraping
-selenium
-
-#ML
-scikit-learn
-mlflow
-optuna
 
 #optimal portfolio
 yfinance
@@ -17,6 +7,3 @@ cvxopt
 cvxpy
 PyPortfolioOpt
 
-
-#pipeline
-apache-airflow

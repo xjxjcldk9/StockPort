@@ -50,5 +50,9 @@ def get_all_price(market):
     return price_df.T
 
 
+def optimal_portfolio(market):
+    pass
+
+
 if __name__ == '__main__':
     get_all_price(args.case).to_csv(SAVE_FILE_TW)
