@@ -9,3 +9,4 @@
 1. 安裝套件 `pip install -e .`
 2. 執行 `stockport TW`爬取台股價格
 3. 執行`stockport TW -v 價格`獲得最佳購買股數
+4. 資料都在data資料夾

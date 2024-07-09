@@ -85,12 +85,11 @@ def main():
     PRICE_FILE = PRICE_DIR / FILE_NAME
 
     if PRICE_FILE.exists():
-        print('File Detected')
+        res = input('File Detected. Scrape Latest? (Y)')
+        if res == 'Y':
+            get_all_price(args.case, TICKS_DATA).to_csv(PRICE_FILE)
     else:
-        print('File NOT Detected')
-        print('Scraping...')
         get_all_price(args.case, TICKS_DATA).to_csv(PRICE_FILE)
-        print('Done!')
 
     PORT_FILE = PORT_DIR / FILE_NAME
 
