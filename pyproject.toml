@@ -157,7 +157,7 @@ dependencies = [
 # The following would provide a command line executable called `sample`
 # which executes the function `main` from this package when invoked.
 [project.scripts]
-stockport = "stockport.main:main"
+stockport = "stockport.calcport:main"
 
 
 # This is configuration specific to the `setuptools` build backend.
@@ -169,4 +169,4 @@ stockport = "stockport.main:main"
 
 
 [tool.setuptools.packages.find]
-where = ["code"]  # list of folders that contain the packages (["."] by default)
+where = ["src"]  # list of folders that contain the packages (["."] by default)

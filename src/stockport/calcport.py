@@ -1,17 +1,17 @@
 import warnings
+from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
+
+import numpy as np
 import pandas as pd
 import yfinance as yf
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from argparse import ArgumentParser
-
+from pypfopt import objective_functions
+from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
+from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
-from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
-from pypfopt import objective_functions
-
 
 warnings.filterwarnings("ignore")
 
@@ -46,7 +46,7 @@ def optimal_portfolio(price_df, value):
     S = CovarianceShrinkage(price_df).ledoit_wolf()
 
     ef = EfficientFrontier(mu, S)
-    ef.add_objective(objective_functions.L2_reg, gamma=1e-3)
+    # ef.add_objective(objective_functions.L2_reg, gamma=1e-5)
     w = ef.max_sharpe()
 
     latest_prices = get_latest_prices(price_df)
@@ -97,4 +97,4 @@ def main():
     if args.value:
         df = pd.read_csv(PRICE_FILE, index_col='Date')
         portfolio_df = optimal_portfolio(df, args.value)
-        process_portfolio(portfolio_df).to_csv(PORT_FILE, index=False)
+        np.round(portfolio_df, 1).to_csv(PORT_FILE)
