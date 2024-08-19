@@ -1,11 +1,11 @@
 import ssl
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -42,8 +42,6 @@ def get_0056_stocks():
 
 
 # 臺灣100股票
-
-
 def get_tw100_stocks():
     driver = webdriver.Chrome(options=options)
     driver.get('https://www.wantgoo.com/index/%5E543/stocks')
@@ -82,4 +80,21 @@ def get_0056_stocks_ticks_industries():
     stock_names.to_csv('0056.csv', index=False)
 
 
-get_0056_stocks_ticks_industries()
+def get_all_stock_ticks_industries():
+    df = pd.read_excel('2023Q1.XLS', usecols='A,B', skiprows=5)
+    df.columns = ['ticks', 'name']
+    data = []
+    for index, row in df.iterrows():
+        if pd.isna(row['name']):
+            flag = True
+            continue
+        if flag == True:
+            industry = row['name']
+            flag = False
+            continue
+
+        if not pd.isna(row['ticks']):
+            data.append((row['ticks'], row['name'], industry))
+    final_df = pd.DataFrame(data, columns=['代碼', '名稱', '產業'])
+    final_df['代碼'] = final_df['代碼'].astype('int').astype('object')
+    final_df.to_csv('stock_tick.csv', index=False)

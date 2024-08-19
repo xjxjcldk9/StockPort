@@ -1,25 +1,11 @@
-import warnings
-from argparse import ArgumentParser
-from datetime import datetime
-from pathlib import Path
 
-import numpy as np
+
 import pandas as pd
 import yfinance as yf
-from dateutil.relativedelta import relativedelta
-from pypfopt import objective_functions
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
-
-warnings.filterwarnings("ignore")
-
-today = datetime.today()
-ym = today.strftime("%Y-%m")
-prev_year = today-relativedelta(years=1)
-today = today.strftime("%Y-%m-%d")
-prev_year = prev_year.strftime("%Y-%m-%d")
 
 
 def get_price(stock_name, case, start_date, end_date):
@@ -62,38 +48,3 @@ def process_portfolio(portfolio_df, data):
     portfolio_df = portfolio_df.join(stock_tick).reset_index(names='Name')
     portfolio_df = portfolio_df.sort_values('units', ascending=False)
     return portfolio_df
-
-
-def main():
-
-    parser = ArgumentParser()
-    parser.add_argument('case', choices=['TW', 'US'])
-    parser.add_argument('-v', '--value',  type=int)
-    args = parser.parse_args()
-
-    DATA_DIR = Path(__file__).parents[2] / 'data'
-
-    PRICE_DIR = DATA_DIR / 'stock_prices'
-    PRICE_DIR.mkdir(exist_ok=True)
-
-    PORT_DIR = DATA_DIR / 'portfolio'
-    PORT_DIR.mkdir(exist_ok=True)
-
-    TICKS_DATA = DATA_DIR / 'static_information' / f'{args.case}.csv'
-
-    FILE_NAME = f'{args.case}_{ym}.csv'
-    PRICE_FILE = PRICE_DIR / FILE_NAME
-
-    if PRICE_FILE.exists():
-        res = input('File Detected. Scrape Latest? (Y)')
-        if res == 'Y':
-            get_all_price(args.case, TICKS_DATA).to_csv(PRICE_FILE)
-    else:
-        get_all_price(args.case, TICKS_DATA).to_csv(PRICE_FILE)
-
-    PORT_FILE = PORT_DIR / FILE_NAME
-
-    if args.value:
-        df = pd.read_csv(PRICE_FILE, index_col='Date')
-        portfolio_df = optimal_portfolio(df, args.value)
-        np.round(portfolio_df, 1).to_csv(PORT_FILE)
