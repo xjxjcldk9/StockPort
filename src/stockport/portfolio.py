@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import yfinance as yf
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
@@ -8,23 +6,12 @@ from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
 
 
-def get_price(stock_name, case, start_date, end_date):
-    if case == 'TW':
-        tick = str(stock_name['Symbol']) + '.TW'
-    elif case == 'US':
-        tick = str(stock_name['Symbol'])
-    stock = yf.Ticker(tick)
-    stock_data = stock.history(start=start_date, end=end_date)
+def get_price(tick, period) -> pd.DataFrame:
+    stock = yf.Tickers(tick)
+    stock_data = stock.history(period=period)
 
     prices = stock_data['Close']
     return prices
-
-
-def get_all_price(case, ticks_data):
-    df = pd.read_csv(ticks_data)
-    price_df = df.apply(get_price, 1, args=(case, prev_year, today))
-    price_df = price_df.set_index(df['Symbol'])
-    return price_df.T
 
 
 def optimal_portfolio(price_df, value):
@@ -39,8 +26,10 @@ def optimal_portfolio(price_df, value):
     da = DiscreteAllocation(w, latest_prices, total_portfolio_value=value)
     allocation, leftover = da.lp_portfolio()
 
-    return pd.DataFrame({'price': latest_prices,
-                         'units': pd.Series(allocation)}).dropna()
+    return pd.DataFrame({
+        'price': latest_prices,
+        'units': pd.Series(allocation)
+    }).dropna()
 
 
 def process_portfolio(portfolio_df, data):
