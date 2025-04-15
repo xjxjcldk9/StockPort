@@ -1,4 +1,4 @@
-from stockport.portfolio import get_price
+from stockport.portfolio import get_all_prices, get_price
 
 period = '1mo'
 
@@ -21,3 +21,8 @@ def test_get_prices_US():
 def test_get_prices_TW():
     dat = get_price('2330.TW 2454.TW', period)
     assert len(dat['2330.TW']) > 0
+
+
+def test_get_all_prices():
+    assert len(get_all_prices('TW', period)) > 0
+    assert len(get_all_prices('US', period)) > 0

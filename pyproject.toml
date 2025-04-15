@@ -1,9 +1,24 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "stockport"
-version = "1.0"
+version = "0.1.0"
+description = "Use portfolio optimization algorithm to choose the best portfolio"
+authors = [
+    {name = "Shen",email = "xjxjcldk9@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "typer (>=0.15.2,<0.16.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "yfinance (>=0.2.55,<0.3.0)",
+    "pyportfolioopt (>=1.5.6,<2.0.0)",
+    "scikit-learn (>=1.6.1,<2.0.0)"
+]
 
 
+[project.scripts]
+stockport = "stockport.cli:app"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
