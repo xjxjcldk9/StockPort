@@ -29,27 +29,19 @@ def get_all_prices(market, period):
     return prices
 
 
-def optimal_portfolio(price_df, value):
+def optimal_portfolio(price_df):
     mu = mean_historical_return(price_df)
     S = CovarianceShrinkage(price_df).ledoit_wolf()
 
     ef = EfficientFrontier(mu, S)
-    ef.add_objective(objective_functions.L2_reg, gamma=0.2)
+    #ef.add_objective(objective_functions.L2_reg, gamma=0.2)
     w = ef.max_sharpe()
 
     weights = pd.Series(w)
     #只留下前五個
     my_weight = weights.sort_values(ascending=False)[:5]
     my_weight /= my_weight.sum()
-
-    # latest_prices = get_latest_prices(price_df)
-    # da = DiscreteAllocation(w, latest_prices, total_portfolio_value=value)
-    # allocation, leftover = da.lp_portfolio()
-
-    # return pd.DataFrame({
-    #     'price': latest_prices,
-    #     'units': pd.Series(allocation)
-    # }).dropna()
+    return my_weight
 
 
 def process_portfolio(portfolio_df, data):
