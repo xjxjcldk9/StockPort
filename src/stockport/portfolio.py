@@ -1,12 +1,10 @@
+from pathlib import Path
+
 import pandas as pd
 import yfinance as yf
-from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
-from pypfopt import objective_functions
-
-from pathlib import Path
 
 
 def get_price(tick, period) -> pd.DataFrame:
@@ -14,6 +12,7 @@ def get_price(tick, period) -> pd.DataFrame:
     stock_data = stock.history(period=period)
 
     prices = stock_data['Close']
+    prices = prices.dropna()
     return prices
 
 
@@ -34,11 +33,11 @@ def optimal_portfolio(price_df):
     S = CovarianceShrinkage(price_df).ledoit_wolf()
 
     ef = EfficientFrontier(mu, S)
-    #ef.add_objective(objective_functions.L2_reg, gamma=0.2)
+    # ef.add_objective(objective_functions.L2_reg, gamma=0.2)
     w = ef.max_sharpe()
 
     weights = pd.Series(w)
-    #只留下前五個
+    # 只留下前五個
     my_weight = weights.sort_values(ascending=False)[:5]
     my_weight /= my_weight.sum()
     return my_weight
