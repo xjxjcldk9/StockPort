@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pypfopt import objective_functions
 import pandas as pd
 import yfinance as yf
 from pypfopt.efficient_frontier import EfficientFrontier
@@ -33,7 +34,7 @@ def optimal_portfolio(price_df):
     S = CovarianceShrinkage(price_df).ledoit_wolf()
 
     ef = EfficientFrontier(mu, S)
-    # ef.add_objective(objective_functions.L2_reg, gamma=0.2)
+    ef.add_objective(objective_functions.L2_reg, gamma=0.2)
     w = ef.max_sharpe()
 
     weights = pd.Series(w)
